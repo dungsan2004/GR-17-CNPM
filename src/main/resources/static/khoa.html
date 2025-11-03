@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Khoa — Hệ thống quản lý điểm thi</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="styles/white-bg.css">
+    <style>
+        :root{
+            --blue:#2563eb;--blue-dark:#1e40af;--bg:#f4f6fb;--bg-2:#ffffff;
+            --muted:#6b7280;--card:#ffffff;--accent:#eef2ff;--border:rgba(15,23,42,0.08);
+            --shadow:0 8px 24px rgba(2,6,23,0.06);--radius:12px
+        }
+        @media (prefers-color-scheme: dark){
+            :root{--bg:#0b1220;--bg-2:#0f172a;--muted:#94a3b8;--card:#0b1220;--accent:#0f1b3d;--border:rgba(148,163,184,0.15);--shadow:0 8px 24px rgba(0,0,0,0.35)}
+            img, svg { filter: saturate(0.95) }
+        }
+        *{box-sizing:border-box} html,body{height:100%;margin:0}
+        body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),var(--bg-2));color:#0f172a;line-height:1.45}
+        @media (prefers-color-scheme: dark){ body{color:#e5e7eb} }
+        a{color:inherit;text-decoration:none}
+        a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(37,99,235,0.35);outline-offset:2px;border-radius:10px}
+        .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(255,255,255,0.75);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+        @media (prefers-color-scheme: dark){.topbar{background:rgba(2,6,23,0.55)}}
+        .brand{display:flex;align-items:center;gap:12px;color:var(--blue);font-weight:700}
+        .brand img{width:36px;height:36px;border-radius:8px;box-shadow:var(--shadow);object-fit:cover}
+        .brand-title{font-size:1rem}
+        .top-actions{display:flex;align-items:center;gap:12px}
+        .user-chip{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);font-size:0.95rem;border:1px solid var(--border)}
+        .avatar{width:32px;height:32px;border-radius:999px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+        .btn{padding:8px 12px;border-radius:10px;background:var(--blue);color:#fff;font-weight:600;border:1px solid transparent;cursor:pointer;transition:transform .08s ease}
+        .btn:hover{transform:translateY(-1px)} .btn.secondary{background:transparent;color:var(--blue);border:1px solid rgba(37,99,235,0.25)}
+        .container{max-width:1200px;margin:18px auto;padding:0 18px}
+        .card{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border:1px solid var(--border)}
+        .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:8px}
+        .toolbar-left{display:flex;gap:8px;align-items:center}
+        .toolbar-right{display:flex;gap:8px;align-items:center}
+        .input{height:36px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:#fff;color:inherit}
+        @media (prefers-color-scheme: dark){.input{background:#0b1220}}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        thead th{font-size:0.9rem;color:var(--muted);text-align:left;padding:6px 10px}
+        tbody tr{background:linear-gradient(180deg,#fff,#fbfdff);box-shadow:0 6px 18px rgba(2,6,23,0.03)}
+        @media (prefers-color-scheme: dark){tbody tr{background:linear-gradient(180deg,#0b1220,#0f172a)}}
+        tbody td{padding:10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+        tbody td:first-child{border-left:1px solid var(--border);border-top-left-radius:12px;border-bottom-left-radius:12px}
+        tbody td:last-child{border-right:1px solid var(--border);border-top-right-radius:12px;border-bottom-right-radius:12px}
+        .actions{display:flex;gap:6px}
+        .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--accent);color:var(--blue);font-weight:600;font-size:0.85rem;border:1px solid var(--border)}
+        /* modal */
+        .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;z-index:40}
+        .modal{width:min(560px,92vw);background:var(--card);border-radius:14px;box-shadow:0 30px 70px rgba(2,6,23,0.25);border:1px solid var(--border)}
+        .modal header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)}
+        .modal .body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+        .modal .row{display:flex;gap:10px}
+        .modal .row > *{flex:1}
+        .modal footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+        .hidden{display:none !important}
+        .small{font-size:0.95rem;color:var(--muted)}
+        .link{color:var(--blue);text-decoration:none}
+    </style>
+</head>
+<body>
+<header class="topbar" role="banner" aria-label="Thanh tiêu đề">
+    <div class="brand">
+        <a class="link" href="main.html" aria-label="Về trang chủ">
+            <img src="Dh-Vinh.jpg" alt="Logo trường Đại học Vinh">
+        </a>
+        <div class="brand-title">Vinh Uni — Quản lý Khoa</div>
+    </div>
+    <div class="top-actions">
+        <div id="greeting" class="user-chip small" aria-live="polite">
+            <div class="avatar" aria-hidden="true">V</div>
+            <div id="greetingText" style="min-width:120px;color:var(--blue);font-weight:700"></div>
+        </div>
+        <button id="logoutBtn" class="btn secondary" aria-label="Đăng xuất">Đăng xuất</button>
+    </div>
+</header>
+
+<main class="container" role="main">
+    <div class="card">
+        <div class="toolbar" role="region" aria-label="Thanh công cụ">
+            <div class="toolbar-left">
+                <button id="btnAdd" class="btn" aria-label="Thêm khoa">+ Thêm khoa</button>
+                <a href="main.html#khoa" class="btn secondary" aria-label="Quay lại">← Quay lại</a>
+            </div>
+            <div class="toolbar-right">
+                <input id="searchBox" class="input" type="search" placeholder="Tìm theo mã\/tên khoa..." aria-label="Tìm kiếm">
+            </div>
+        </div>
+        <div class="small" id="statusText">Đang tải dữ liệu...</div>
+        <div style="overflow:auto;margin-top:8px">
+            <table aria-label="Danh sách Khoa">
+                <thead>
+                <tr>
+                    <th style="width:120px">Mã khoa</th>
+                    <th>Tên khoa</th>
+                    <th style="min-width:160px">Mô tả</th>
+                    <th style="width:160px">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal create\/edit -->
+<div id="modalWrap" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal">
+        <header>
+            <h3 id="modalTitle" style="margin:0;color:var(--blue)">Thêm khoa</h3>
+            <button id="btnClose" class="btn secondary" aria-label="Đóng">Đóng</button>
+        </header>
+        <div class="body">
+            <input type="hidden" id="f_id">
+            <div class="row">
+                <div>
+                    <label for="f_ma" class="small">Mã khoa</label>
+                    <input id="f_ma" class="input" placeholder="VD: CNTT">
+                </div>
+                <div>
+                    <label for="f_ten" class="small">Tên khoa</label>
+                    <input id="f_ten" class="input" placeholder="VD: Công nghệ thông tin">
+                </div>
+            </div>
+            <div>
+                <label for="f_mota" class="small">Mô tả</label>
+                <textarea id="f_mota" class="input" rows="3" placeholder="Ghi chú..."></textarea>
+            </div>
+        </div>
+        <footer>
+            <button id="btnSave" class="btn" aria-label="Lưu">Lưu</button>
+            <button id="btnCancel" class="btn secondary" aria-label="Hủy">Hủy</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const API = '/api/khoa';
+        const greetingText = document.getElementById('greetingText');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const statusText = document.getElementById('statusText');
+        const rowsEl = document.getElementById('rows');
+        const searchBox = document.getElementById('searchBox');
+        const btnAdd = document.getElementById('btnAdd');
+
+        const modalWrap = document.getElementById('modalWrap');
+        const modalTitle = document.getElementById('modalTitle');
+        const btnClose = document.getElementById('btnClose');
+        const btnCancel = document.getElementById('btnCancel');
+        const btnSave = document.getElementById('btnSave');
+        const f_id = document.getElementById('f_id');
+        const f_ma = document.getElementById('f_ma');
+        const f_ten = document.getElementById('f_ten');
+        const f_mota = document.getElementById('f_mota');
+
+        let data = []; // raw list
+        let filtered = []; // view list
+
+        // greeting
+        const params = new URLSearchParams(location.search);
+        const user = params.get('user') || params.get('username') || localStorage.getItem('user') || '';
+        if(user){
+            const display = decodeURIComponent(user);
+            greetingText.textContent = display;
+            localStorage.setItem('user', user);
+        } else {
+            greetingText.innerHTML = '<a href="login.html" style="color:var(--blue);text-decoration:none;">Đăng nhập</a>';
+        }
+        logoutBtn.addEventListener('click', () => { localStorage.removeItem('user'); location.href = 'index.html'; });
+
+        // helpers
+        function normalize(item){
+            return {
+                id: item.id ?? item.khoaId ?? item._id ?? null,
+                ma: item.maKhoa ?? item.code ?? item.ma ?? '',
+                ten: item.tenKhoa ?? item.name ?? item.ten ?? '',
+                moTa: item.moTa ?? item.mota ?? item.description ?? ''
+            };
+        }
+        function showStatus(msg){ statusText.textContent = msg || ''; }
+        function openModal(title, item){
+            modalTitle.textContent = title;
+            f_id.value = item?.id ?? '';
+            f_ma.value = item?.ma ?? '';
+            f_ten.value = item?.ten ?? '';
+            f_mota.value = item?.moTa ?? '';
+            modalWrap.style.display = 'flex';
+            modalWrap.setAttribute('aria-hidden','false');
+            f_ma.focus();
+        }
+        function closeModal(){
+            modalWrap.style.display = 'none';
+            modalWrap.setAttribute('aria-hidden','true');
+            f_id.value=''; f_ma.value=''; f_ten.value=''; f_mota.value='';
+        }
+        function render(list){
+            rowsEl.innerHTML = '';
+            if(!list.length){
+                rowsEl.innerHTML = '<tr><td colspan="4" class="small" style="padding:14px">Không có dữ liệu</td></tr>';
+                return;
+            }
+            const frag = document.createDocumentFragment();
+            list.forEach(it => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td><span class="badge">${escapeHtml(it.ma || '')}</span></td>
+                <td>${escapeHtml(it.ten || '')}</td>
+                <td>${escapeHtml(it.moTa || '')}</td>
+                <td>
+                  <div class="actions">
+                    <button class="btn secondary" data-action="edit">Sửa</button>
+                    <button class="btn secondary" data-action="del">Xóa</button>
+                  </div>
+                </td>`;
+                tr.querySelector('[data-action="edit"]').addEventListener('click', () => openModal('Sửa khoa', it));
+                tr.querySelector('[data-action="del"]').addEventListener('click', () => onDelete(it));
+                frag.appendChild(tr);
+            });
+            rowsEl.appendChild(frag);
+        }
+        function applyFilter(){
+            const q = (searchBox.value || '').trim().toLowerCase();
+            filtered = !q ? [...data] : data.filter(it =>
+                (it.ma || '').toLowerCase().includes(q) ||
+                (it.ten || '').toLowerCase().includes(q) ||
+                (it.moTa || '').toLowerCase().includes(q)
+            );
+            render(filtered);
+        }
+
+        // network
+        async function load(){
+            showStatus('Đang tải dữ liệu...');
+            try{
+                const res = await fetch(API, {headers:{'Accept':'application/json'}});
+                if(!res.ok) throw new Error('HTTP '+res.status);
+                const arr = await res.json();
+                data = Array.isArray(arr) ? arr.map(normalize) : [];
+                applyFilter();
+                showStatus(data.length ? '': 'Chưa có khoa nào.');
+            }catch(e){
+                console.error(e);
+                showStatus('Lỗi tải dữ liệu. Vui lòng thử lại.');
+            }
+        }
+        async function save(){
+            const id = (f_id.value || '').trim();
+            const payload = {
+                id: id || undefined,
+                maKhoa: f_ma.value.trim(),
+                tenKhoa: f_ten.value.trim(),
+                moTa: f_mota.value.trim()
+            };
+            if(!payload.maKhoa || !payload.tenKhoa){
+                alert('Vui lòng nhập mã khoa và tên khoa.');
+                return;
+            }
+            try{
+                btnSave.disabled = true;
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${API}/${encodeURIComponent(id)}` : API;
+                const res = await fetch(url,{
+                    method, headers:{'Content-Type':'application/json','Accept':'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok) throw new Error('HTTP '+res.status);
+                closeModal();
+                await load();
+            }catch(e){
+                console.error(e);
+                alert('Lưu thất bại. Vui lòng thử lại.');
+            }finally{
+                btnSave.disabled = false;
+            }
+        }
+        async function onDelete(item){
+            if(!confirm(`Xóa khoa "${item.ten}"?`)) return;
+            try{
+                const res = await fetch(`${API}/${encodeURIComponent(item.id)}`, { method:'DELETE' });
+                if(!res.ok) throw new Error('HTTP '+res.status);
+                await load();
+            }catch(e){
+                console.error(e);
+                alert('Xóa thất bại. Vui lòng thử lại.');
+            }
+        }
+
+        // events
+        btnAdd.addEventListener('click', () => openModal('Thêm khoa'));
+        btnClose.addEventListener('click', closeModal);
+        btnCancel.addEventListener('click', closeModal);
+        btnSave.addEventListener('click', save);
+        modalWrap.addEventListener('click', (e)=>{ if(e.target === modalWrap) closeModal(); });
+        searchBox.addEventListener('input', applyFilter);
+
+        // utils
+        function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) }
+
+        // init
+        load();
+    })();
+</script>
+</body>
+</html>

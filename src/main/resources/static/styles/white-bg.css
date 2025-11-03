@@ -1,0 +1,22 @@
+:root{ color-scheme: light }
+
+html, body{
+    background:#ffffff !important;
+}
+
+body{
+    background:#ffffff !important;          /* override current gradient */
+    background-image:none !important;        /* remove linear-gradient */
+    color:#0f172a;
+}
+
+/* Keep top bar white as well */
+.topbar{ background:#ffffff !important }
+
+/* Ensure dark-mode media rules do not flip the background */
+@media (prefers-color-scheme: dark){
+    html, body{ background:#ffffff !important }
+    .topbar{ background:#ffffff !important }
+}
+
+

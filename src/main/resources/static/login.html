@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập — Vinh Uni</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f7f7f7; color: #222; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 40px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        .logo { display:flex; align-items:center; font-size:1.2em; font-weight:600; color:#2563eb; }
+        .logo-icon { width:28px; height:28px; margin-right:10px; }
+        .header-buttons a { margin-left:12px; text-decoration:none; color:#2563eb; font-weight:500; padding:8px 18px; border-radius:6px; background:#fff; }
+        .header-buttons a.login { background:#2563eb; color:#fff; }
+        .container { display:flex; align-items:center; justify-content:center; min-height: calc(100vh - 72px); padding:24px; }
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background:#fff;
+            border-radius:10px;
+            box-shadow:0 8px 30px rgba(18,38,63,0.08);
+            padding:28px;
+        }
+        .card h1 { margin:0 0 8px 0; font-size:1.4em; color:#2563eb; }
+        .card p { margin:0 0 18px 0; color:#666; }
+        .form-group { margin-bottom:14px; }
+        label { display:block; font-size:0.9em; color:#333; margin-bottom:6px; }
+        input[type="email"], input[type="password"], input[type="text"] {
+            width:100%; padding:10px 12px; border:1px solid #e6e6e6; border-radius:8px; font-size:0.95em;
+            box-sizing:border-box;
+        }
+        .actions { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+        .btn {
+            display:inline-block; text-decoration:none; color:#fff; background:#2563eb; padding:10px 18px; border-radius:8px; font-weight:600;
+        }
+        .btn.secondary { background:#eef2ff; color:#2563eb; border:1px solid transparent; font-weight:600; padding:8px 14px; }
+        .small { font-size:0.9em; color:#666; }
+        @media (max-width:480px) { .card { padding:18px; } }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Logo" class="logo-icon">
+        Vinh Uni
+    </div>
+    <div class="header-buttons">
+        <a href="index.html" class="secondary">Trang chủ</a>
+        <a href="register.html" class="secondary">Đăng ký</a>
+        <a href="login.html" class="login">Đăng nhập</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card" role="main" aria-labelledby="loginTitle">
+        <h1 id="loginTitle">Đăng nhập</h1>
+        <p class="small">Đăng nhập để quản lý điểm thi và thống kê kết quả học tập.</p>
+
+        <!-- flash message -->
+        <div id="flash" class="small" style="margin:8px 0; color:#d14343; display:none;"></div>
+
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label for="email">Email hoặc MSSV</label>
+                <input id="email" name="username" type="text" placeholder="you@vinhuni.edu.vn hoặc MSSV" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <input id="password" name="password" type="password" placeholder="Mật khẩu" required>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.95em; color:#555;">
+                    <input type="checkbox" name="remember"> Ghi nhớ
+                </label>
+                <a href="#" class="small" style="color:#2563eb; text-decoration:none;">Quên mật khẩu?</a>
+            </div>
+
+            <div class="actions" style="margin-top:18px;">
+                <button class="btn" type="submit">Đăng nhập</button>
+                <a href="register.html" class="btn secondary" style="text-decoration:none;">Đăng ký</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const p = new URLSearchParams(location.search);
+        const flash = document.getElementById('flash');
+        if (p.get('login') === 'success') {
+            flash.style.display = 'block';
+            flash.style.color = '#16a34a';
+            flash.textContent = 'Đăng nhập thành công.';
+        } else if (p.get('error') === 'invalid') {
+            flash.style.display = 'block';
+            flash.textContent = 'Sai tài khoản hoặc mật khẩu.';
+        }
+    })();
+</script>
+</body>
+</html>

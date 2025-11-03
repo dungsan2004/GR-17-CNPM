@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Quản lý Ngành — Hệ thống quản lý điểm thi</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="styles/white-bg.css">
+    <style>
+        :root{
+            --blue:#2563eb;--blue-dark:#1e40af;--bg:#f4f6fb;--bg-2:#ffffff;
+            --muted:#6b7280;--card:#ffffff;--accent:#eef2ff;--border:rgba(15,23,42,0.08);
+            --shadow:0 8px 24px rgba(2,6,23,0.06);--radius:14px
+        }
+        @media (prefers-color-scheme: dark){
+            :root{--bg:#0b1220;--bg-2:#0f172a;--muted:#94a3b8;--card:#0b1220;--accent:#0f1b3d;--border:rgba(148,163,184,0.15);--shadow:0 8px 24px rgba(0,0,0,0.35)}
+            img, svg { filter: saturate(0.95) }
+        }
+        *{box-sizing:border-box}html,body{height:100%;margin:0}
+        body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),var(--bg-2));color:#0f172a;line-height:1.45}
+        @media (prefers-color-scheme: dark){body{color:#e5e7eb}}
+        a{color:inherit;text-decoration:none}
+
+        /* Topbar */
+        .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(255,255,255,0.75);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+        @media (prefers-color-scheme: dark){.topbar{background:rgba(2,6,23,0.55)}}
+        .brand{display:flex;align-items:center;gap:12px;color:var(--blue);font-weight:700}
+        .brand img{width:36px;height:36px;border-radius:8px;box-shadow:var(--shadow);object-fit:cover}
+        .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .btn{padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;font-weight:600;border:1px solid transparent;cursor:pointer}
+        .btn.secondary{background:transparent;color:var(--blue);border:1px solid rgba(37,99,235,0.25)}
+        .user-chip{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);font-size:0.95rem;border:1px solid var(--border)}
+        .avatar{width:32px;height:32px;border-radius:999px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+
+        /* Layout */
+        .container{max-width:1100px;margin:18px auto;padding:0 18px}
+        .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px}
+
+        /* Hero */
+        .hero{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+        .hero-title{font-size:1.6rem;margin:0 0 6px 0}
+        .hero-sub{color:var(--muted);margin:0}
+        .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+        /* Table */
+        table{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--card)}
+        thead th{background:#f7f8fc;padding:12px 14px;border-bottom:1px solid var(--border);text-align:left}
+        @media (prefers-color-scheme: dark){thead th{background:#0f172a}}
+        tbody td{padding:12px 14px;border-bottom:1px solid var(--border)}
+        .badge{display:inline-block;padding:4px 8px;background:var(--accent);color:var(--blue-dark);border-radius:8px;font-weight:700}
+        .actions{display:flex;gap:8px}
+
+        /* Modal form */
+        .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.45);z-index:50}
+        .modal.show{display:flex}
+        .modal .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);width:100%;max-width:560px;overflow:hidden}
+        .modal header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+        .modal header h3{margin:0;font-size:1.1rem}
+        .modal .body{padding:16px}
+        .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+        .form-row label{font-weight:600}
+        .form-row input{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:inherit}
+        .error{color:#b91c1c;margin:4px 0 0 0;display:none}
+        .modal footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 16px;border-top:1px solid var(--border)}
+    </style>
+</head>
+<body>
+<header class="topbar" aria-label="Thanh tiêu đề">
+    <div class="brand">
+        <img src="Dh-Vinh.jpg" alt="Logo trường Đại học Vinh">
+        <div>Vinh Uni — Hệ thống quản lý điểm thi</div>
+    </div>
+    <div class="top-actions">
+        <a href="khoa.html" class="btn secondary" aria-label="Quản lý Khoa">Khoa</a>
+        <a href="nganh.html" class="btn secondary" aria-label="Quản lý Ngành">Ngành</a>
+        <div id="greeting" class="user-chip" aria-live="polite">
+            <div class="avatar" aria-hidden="true">V</div>
+            <div id="greetingText" style="min-width:120px;color:var(--blue);font-weight:700"></div>
+        </div>
+        <button id="logoutBtn" class="btn secondary" aria-label="Đăng xuất">Đăng xuất</button>
+    </div>
+</header>
+
+<main class="container" role="main">
+    <section class="card hero" aria-label="Tiêu đề trang">
+        <div>
+            <h1 class="hero-title">Quản lý Ngành</h1>
+            <p class="hero-sub">Danh sách ngành đào tạo và thao tác thêm\/sửa\/xoá.</p>
+        </div>
+        <div class="hero-actions">
+            <a href="main.html" class="btn secondary">Trang chính</a>
+            <button id="addBtn" class="btn">Thêm ngành</button>
+        </div>
+    </section>
+
+    <section class="card" aria-label="Danh sách ngành">
+        <table>
+            <thead>
+            <tr>
+                <th>Mã ngành</th>
+                <th>Tên ngành</th>
+                <th>Khoa</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody id="nganhBody"></tbody>
+        </table>
+    </section>
+</main>
+
+<!-- Modal Form -->
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+    <div class="panel">
+        <header>
+            <h3 id="formTitle">Thêm ngành</h3>
+            <button id="closeModal" class="btn secondary" aria-label="Đóng">Đóng</button>
+        </header>
+        <form id="nganhForm">
+            <div class="body">
+                <input type="hidden" id="fId">
+                <div class="form-row">
+                    <label for="fMaNganh">Mã ngành</label>
+                    <input id="fMaNganh" placeholder="VD: CNTT" required>
+                </div>
+                <div class="form-row">
+                    <label for="fTenNganh">Tên ngành</label>
+                    <input id="fTenNganh" placeholder="VD: Công nghệ thông tin" required>
+                </div>
+                <div class="form-row">
+                    <label for="fMaKhoa">Mã Khoa\/Viện</label>
+                    <input id="fMaKhoa" placeholder="VD: KHMT" required>
+                    <div id="formError" class="error">Không tìm thấy Mã Khoa\/Viện.</div>
+                </div>
+            </div>
+            <footer>
+                <button type="button" id="cancelBtn" class="btn secondary">Hủy</button>
+                <button type="submit" class="btn">Lưu</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // Header behavior
+        const greetingText = document.getElementById('greetingText');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const user = localStorage.getItem('user') || '';
+        if(user){ greetingText.textContent = decodeURIComponent(user); }
+        else { greetingText.innerHTML = '<a href="login.html" style="color:var(--blue);text-decoration:none;">Đăng nhập</a>'; }
+        logoutBtn?.addEventListener('click', function(){ localStorage.removeItem('user'); location.href = 'index.html'; });
+
+        // Elements
+        const addBtn = document.getElementById('addBtn');
+        const tbody = document.getElementById('nganhBody');
+        const modal = document.getElementById('modal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const form = document.getElementById('nganhForm');
+        const fId = document.getElementById('fId');
+        const fMaNganh = document.getElementById('fMaNganh');
+        const fTenNganh = document.getElementById('fTenNganh');
+        const fMaKhoa = document.getElementById('fMaKhoa');
+        const formTitle = document.getElementById('formTitle');
+        const formError = document.getElementById('formError');
+
+        const API_NGANH = 'api/nganh';
+        const API_KHOA = 'api/khoa';
+
+        let items = [];
+        const khoaIndex = { byId: new Map(), byCode: new Map() };
+
+        async function request(url, options){
+            const res = await fetch(url, Object.assign({
+                headers: { 'Content-Type': 'application/json' }
+            }, options));
+            if(!res.ok){
+                const text = await res.text().catch(()=> '');
+                throw new Error(text || ('HTTP ' + res.status));
+            }
+            if(res.status === 204) return null;
+            const ct = res.headers.get('content-type') || '';
+            return ct.includes('application/json') ? res.json() : null;
+        }
+
+        async function preloadKhoaList(){
+            try{
+                const list = await request(API_KHOA, { method: 'GET' }) || [];
+                (Array.isArray(list)?list:[]).forEach(k => {
+                    if(k && typeof k === 'object'){
+                        if(k.id != null) khoaIndex.byId.set(k.id, k);
+                        const code = (k.maKhoa ?? k.ma ?? k.code);
+                        if(code) khoaIndex.byCode.set(String(code).toLowerCase(), k);
+                    }
+                });
+            }catch(e){ /* keep empty if API not ready */ }
+        }
+
+        function describeKhoa(n){
+            const k = (n?.khoaId != null) ? khoaIndex.byId.get(n.khoaId) : null;
+            if(k){
+                const code = (k.maKhoa ?? k.ma ?? k.code) ?? '—';
+                const name = (k.tenKhoa ?? k.ten ?? k.name) ?? '';
+                return name ? (name + ' (' + code + ')') : String(code);
+            }
+            // fallback to server provided fields
+            if(n?.khoaTen) return n.khoaTen;
+            if(n?.khoaId != null) return 'Khoa ID: ' + n.khoaId;
+            return '—';
+        }
+
+        function renderRows(list){
+            tbody.innerHTML = (list || []).map(n => `
+      <tr>
+        <td><span class="badge">${escapeHtml(n.maNganh)}</span></td>
+        <td>${escapeHtml(n.tenNganh)}</td>
+        <td>${escapeHtml(describeKhoa(n))}</td>
+        <td class="actions">
+          <button class="btn secondary edit" data-id="${n.id}">Sửa</button>
+          <button class="btn secondary delete" data-id="${n.id}">Xoá</button>
+        </td>
+      </tr>
+    `).join('');
+        }
+
+        function escapeHtml(s){
+            return String(s ?? '').replace(/[&<>"']/g, c => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+            }[c]));
+        }
+
+        async function load(){
+            await preloadKhoaList();
+            const data = await request(API_NGANH, { method: 'GET' }).catch(()=> []);
+            items = Array.isArray(data) ? data : [];
+            renderRows(items);
+        }
+
+        function openForm(mode, data){
+            form.reset();
+            formError.style.display = 'none';
+            fId.value = data?.id ?? '';
+            fMaNganh.value = data?.maNganh ?? '';
+            fTenNganh.value = data?.tenNganh ?? '';
+            // Prefill maKhoa from cache if possible
+            let preCode = '';
+            if(data?.khoaId != null){
+                const k = khoaIndex.byId.get(data.khoaId);
+                preCode = (k?.maKhoa ?? k?.ma ?? k?.code) ?? '';
+            }
+            fMaKhoa.value = preCode;
+            formTitle.textContent = mode === 'edit' ? 'Sửa ngành' : 'Thêm ngành';
+            modal.classList.add('show');
+            setTimeout(()=> fMaNganh.focus(), 0);
+        }
+
+        function closeForm(){
+            modal.classList.remove('show');
+        }
+
+        async function resolveKhoaIdByCode(codeInput){
+            const code = String(codeInput || '').trim().toLowerCase();
+            if(!code) throw new Error('Mã Khoa trống');
+            // Ensure cache
+            if(khoaIndex.byCode.size === 0) await preloadKhoaList();
+            const k = khoaIndex.byCode.get(code);
+            if(!k) throw new Error('Không tìm thấy Mã Khoa/Viện: ' + codeInput);
+            if(k.id == null) throw new Error('Khoa không có ID hợp lệ');
+            return Number(k.id);
+        }
+
+        // Handlers
+        addBtn?.addEventListener('click', () => openForm('create', null));
+        closeModalBtn?.addEventListener('click', closeForm);
+        cancelBtn?.addEventListener('click', closeForm);
+        modal?.addEventListener('click', (e)=>{ if(e.target === modal) closeForm(); });
+
+        form?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            formError.style.display = 'none';
+            try{
+                const payload = {
+                    maNganh: fMaNganh.value.trim(),
+                    tenNganh: fTenNganh.value.trim(),
+                    khoaId: await resolveKhoaIdByCode(fMaKhoa.value)
+                };
+                if(!payload.maNganh || !payload.tenNganh) throw new Error('Vui lòng nhập đầy đủ thông tin');
+
+                const id = fId.value ? Number(fId.value) : null;
+                if(id){
+                    await request(API_NGANH + '/' + id, { method: 'PUT', body: JSON.stringify(payload) });
+                }else{
+                    await request(API_NGANH, { method: 'POST', body: JSON.stringify(payload) });
+                }
+                closeForm();
+                await load();
+            }catch(err){
+                formError.textContent = err.message || 'Lỗi không xác định';
+                formError.style.display = 'block';
+            }
+        });
+
+        tbody?.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button');
+            if(!btn) return;
+            const id = Number(btn.dataset.id);
+
+            if(btn.classList.contains('delete')){
+                if(confirm('Xoá ngành này?')){
+                    try{
+                        await request(API_NGANH + '/' + id, { method: 'DELETE' });
+                        await load();
+                    }catch(err){
+                        alert('Xoá thất bại: ' + err.message);
+                    }
+                }
+                return;
+            }
+
+            if(btn.classList.contains('edit')){
+                const item = items.find(x => Number(x.id) === id);
+                if(item) openForm('edit', item);
+            }
+        });
+
+        load();
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký — Vinh Uni</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f7f7f7; color: #222; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 40px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        .logo { display:flex; align-items:center; font-size:1.2em; font-weight:600; color:#2563eb; }
+        .logo-icon { width:28px; height:28px; margin-right:10px; }
+        .header-buttons a { margin-left:12px; text-decoration:none; color:#2563eb; font-weight:500; padding:8px 18px; border-radius:6px; background:#fff; }
+        .header-buttons a.login { background:#2563eb; color:#fff; }
+        .container { display:flex; align-items:center; justify-content:center; min-height: calc(100vh - 72px); padding:24px; }
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background:#fff;
+            border-radius:10px;
+            box-shadow:0 8px 30px rgba(18,38,63,0.08);
+            padding:28px;
+        }
+        .card h1 { margin:0 0 8px 0; font-size:1.4em; color:#2563eb; }
+        .card p { margin:0 0 18px 0; color:#666; }
+        .form-group { margin-bottom:14px; }
+        label { display:block; font-size:0.9em; color:#333; margin-bottom:6px; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width:100%; padding:10px 12px; border:1px solid #e6e6e6; border-radius:8px; font-size:0.95em; box-sizing:border-box;
+        }
+        .actions { display:flex; align-items:center; justify-content:space-between; margin-top:12px; gap:12px; }
+        .btn {
+            display:inline-block; text-decoration:none; color:#fff; background:#2563eb; padding:10px 18px; border-radius:8px; font-weight:600; border:0; cursor:pointer;
+        }
+        .btn.secondary { background:#eef2ff; color:#2563eb; border:1px solid transparent; font-weight:600; padding:10px 18px; }
+        .small { font-size:0.9em; color:#666; }
+        .flash { margin:8px 0; display:none; font-size:0.9em; }
+        .flash.error { color:#d14343; }
+        .flash.success { color:#16a34a; }
+        @media (max-width:480px) { .card { padding:18px; } }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Logo" class="logo-icon">
+        Vinh Uni
+    </div>
+    <div class="header-buttons">
+        <a href="index.html" class="secondary">Trang chủ</a>
+        <a href="register.html" class="login">Đăng ký</a>
+        <a href="login.html" class="secondary">Đăng nhập</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card" role="main" aria-labelledby="registerTitle">
+        <h1 id="registerTitle">Đăng ký</h1>
+        <p class="small">Tạo tài khoản để sử dụng hệ thống quản lý điểm.</p>
+
+        <div id="flash" class="flash"></div>
+
+        <form id="registerForm" novalidate>
+            <div class="form-group">
+                <label for="fullName">Họ và Tên</label>
+                <input id="fullName" name="fullName" type="text" placeholder="VD: Nguyễn Văn A" required autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="name@example.com" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="studentId">Mã Sinh Viên</label>
+                <input id="studentId" name="studentId" type="text" placeholder="VD: B20DCCN001" required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Xác nhận mật khẩu</label>
+                <input id="confirmPassword" name="confirmPassword" type="password" required minlength="6" autocomplete="new-password">
+            </div>
+
+            <div class="actions">
+                <button id="btnSubmit" type="submit" class="btn">Đăng ký</button>
+                <a href="login.html" class="btn secondary">Đăng nhập</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const form = document.getElementById('registerForm');
+        const flash = document.getElementById('flash');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        function showFlash(text, type) {
+            flash.textContent = text;
+            flash.className = 'flash ' + (type === 'success' ? 'success' : 'error');
+            flash.style.display = 'block';
+        }
+        function clearFlash() {
+            flash.textContent = '';
+            flash.className = 'flash';
+            flash.style.display = 'none';
+        }
+        function setBusy(busy) {
+            btnSubmit.disabled = busy;
+            btnSubmit.textContent = busy ? 'Đang xử lý...' : 'Đăng ký';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearFlash();
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const studentId = document.getElementById('studentId').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!fullName || !email || !studentId || !password || !confirmPassword) {
+                showFlash('Vui lòng nhập đầy đủ thông tin.', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showFlash('Mật khẩu cần tối thiểu 6 ký tự.', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showFlash('Mật khẩu xác nhận không khớp.', 'error');
+                return;
+            }
+
+            try {
+                setBusy(true);
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, email, studentId, password, confirmPassword })
+                });
+
+                const text = await res.text();
+                if (!res.ok) {
+                    showFlash(text || 'Đăng ký thất bại. Vui lòng thử lại.', 'error');
+                    return;
+                }
+
+                showFlash('Đăng ký thành công! Đang chuyển đến trang đăng nhập...', 'success');
+                setTimeout(() => { window.location.href = 'login.html'; }, 900);
+            } catch (err) {
+                showFlash('Lỗi mạng. Vui lòng thử lại sau.', 'error');
+            } finally {
+                setBusy(false);
+            }
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vinh Uni | Hệ thống quản lý điểm thi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/light.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f7f7f7; color: #222; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 40px 16px 40px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2563eb;
+        }
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            margin-right: 10px;
+        }
+        .header-buttons a {
+            margin-left: 12px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: none;
+            background: #fff;
+            transition: background 0.2s;
+        }
+        .header-buttons a.login {
+            background: #2563eb;
+            color: #fff;
+        }
+        .header-buttons a.login:hover {
+            background: #1e40af;
+        }
+        .hero {
+            position: relative;
+            height: 380px;
+            background: url('Dh-Vinh.jpg') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.7);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+        .hero-title {
+            font-size: 3em;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 0.3em;
+            line-height: 1.1;
+        }
+        .hero-subtitle {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 2em;
+        }
+        .hero-buttons a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #fff;
+            background: #2563eb;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1em;
+            transition: background 0.2s;
+            border: none;
+        }
+        .hero-buttons a:hover {
+            background: #1e40af;
+        }
+        .hero-buttons {
+            margin-top: 40px;
+        }
+        .main {
+            background: #fff;
+            padding: 40px 60px 32px 60px;
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+        }
+        .main-section {
+            flex: 1;
+        }
+        .main-section h2 {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 0.6em;
+        }
+        .main-section p, .main-section address {
+            color: #666;
+            font-size: 1em;
+            line-height: 1.6;
+        }
+        @media (max-width: 900px) {
+            .main { flex-direction: column; padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Logo" class="logo-icon">
+        Vinh Uni
+    </div>
+    <div class="header-buttons">
+        <a href="register.html">Đăng ký</a>
+        <a href="login.html" class="login">Đăng nhập</a>
+    </div>
+</div>
+<div class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div style="font-size:1.3em;font-weight:500;margin-bottom:0.5em;">TRƯỜNG ĐẠI HỌC VINH</div>
+        <div class="hero-title">
+            Hệ thống quản lý điểm thi và<br>thống kê kết quả học tập
+        </div>
+        <div class="hero-buttons">
+            <a href="login.html">Đăng nhập</a>
+            <a href="register.html">Đăng ký</a>
+        </div>
+    </div>
+</div>
+<div class="main">
+    <div class="main-section">
+        <h2>Tầm nhìn</h2>
+        <p>
+            Trường Đại học Vinh trở thành đại học thông minh, xếp hạng top 500 đại học hàng đầu châu Á vào năm 2030, hướng đến top 1000 đại học hàng đầu thế giới vào năm 2045.
+        </p>
+    </div>
+    <div class="main-section">
+        <h2>Liên hệ</h2>
+        <address>
+            Địa chỉ: 182 Lê Duẩn, Phường Trường Vinh, Tỉnh Nghệ An<br><br>
+            Điện thoại: (0238)3855.452 -<br>
+            Fax: (0238)3855.269<br><br>
+            Homepage: https://vinhuni.edu.vn<br>
+            Email: vinhuni@vinhuni.edu.vn
+        </address>
+    </div>
+</div>
+</body>
+</html>
