@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Lớp — Hệ thống quản lý điểm thi</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/styles/white-bg.css" />
+    <style>
+        :root{
+            --blue:#2563eb;--blue-dark:#1e40af;--bg:#f4f6fb;--bg-2:#ffffff;
+            --muted:#6b7280;--card:#ffffff;--accent:#eef2ff;--border:rgba(15,23,42,0.08);
+            --shadow:0 8px 24px rgba(2,6,23,0.06);--radius:14px
+        }
+        @media (prefers-color-scheme: dark){
+            :root{--bg:#0b1220;--bg-2:#0f172a;--muted:#94a3b8;--card:#0b1220;--accent:#0f1b3d;--border:rgba(148,163,184,0.15);--shadow:0 8px 24px rgba(0,0,0,0.35)}
+            img, svg { filter: saturate(0.95) }
+        }
+        *{box-sizing:border-box}html,body{height:100%;margin:0}
+        body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),var(--bg-2));color:#0f172a;line-height:1.45}
+        @media (prefers-color-scheme: dark){body{color:#e5e7eb}}
+        a{color:inherit;text-decoration:none}
+
+        /* Topbar */
+        .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(255,255,255,0.75);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+        @media (prefers-color-scheme: dark){.topbar{background:rgba(2,6,23,0.55)}}
+        .brand{display:flex;align-items:center;gap:12px;color:var(--blue);font-weight:700}
+        .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .btn{padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;font-weight:600;border:1px solid transparent;cursor:pointer}
+        .btn.secondary{background:transparent;color:var(--blue);border:1px solid rgba(37,99,235,0.25)}
+
+        /* Layout */
+        .container{max-width:1100px;margin:18px auto;padding:0 18px}
+        .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px}
+
+        /* Hero */
+        .hero{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+        .hero-title{font-size:1.6rem;margin:0 0 6px 0}
+        .hero-sub{color:var(--muted);margin:0}
+        .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+        /* Table */
+        table{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--card)}
+        thead th{background:#f7f8fc;padding:12px 14px;border-bottom:1px solid var(--border);text-align:left}
+        @media (prefers-color-scheme: dark){thead th{background:#0f172a}}
+        tbody td{padding:12px 14px;border-bottom:1px solid var(--border)}
+        .actions{display:flex;gap:8px}
+
+        /* Modal form */
+        .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.45);z-index:50}
+        .modal.show{display:flex}
+        .modal .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);width:100%;max-width:560px;overflow:hidden}
+        .modal header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+        .modal header h3{margin:0;font-size:1.1rem}
+        .modal .body{padding:16px}
+        .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+        .form-row label{font-weight:600}
+        .form-row input, .form-row select{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:inherit}
+        .modal footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 16px;border-top:1px solid var(--border)}
+        .muted{color:var(--muted);margin-top:8px}
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <div class="brand">Hệ thống quản lý điểm thi</div>
+    <div class="top-actions">
+        <a href="/index.html" class="btn secondary">Trang chủ</a>
+        <a href="/main.html" class="btn secondary">Bảng điều khiển</a>
+        <a href="/khoa.html" class="btn secondary">Khoa</a>
+        <a href="/nganh.html" class="btn secondary">Ngành</a>
+        <a href="/lop.html" class="btn">Lớp</a>
+        <a href="/register.html" class="btn secondary">Đăng ký</a>
+        <a href="/login.html" id="loginLink" class="btn secondary">Đăng nhập</a>
+        <a href="#" id="logoutLink" class="btn" style="display:none;">Đăng xuất</a>
+    </div>
+</nav>
+
+<div class="container">
+    <section class="card">
+        <div class="hero">
+            <div>
+                <h1 class="hero-title">Quản lý Lớp</h1>
+                <p class="hero-sub">Danh sách lớp, lọc theo khoa/ngành và thêm/cập nhật bằng hộp thoại.</p>
+            </div>
+            <div class="hero-actions">
+                <button id="openModalBtn" class="btn">Thêm lớp</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="hero">
+            <div>
+                <h3 style="margin:0">Bộ lọc</h3>
+                <p class="hero-sub">Chọn khoa và ngành để lọc danh sách.</p>
+            </div>
+            <div class="hero-actions">
+                <div class="form-row" style="margin:0">
+                    <label for="filterKhoa">Khoa</label>
+                    <select id="filterKhoa"></select>
+                </div>
+                <div class="form-row" style="margin:0">
+                    <label for="filterNganh">Ngành</label>
+                    <select id="filterNganh"></select>
+                </div>
+                <button id="btnFilter" class="btn">Lọc</button>
+                <button id="btnClear" class="btn secondary">Xóa lọc</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mã lớp</th>
+                <th>Tên lớp</th>
+                <th>Khoa</th>
+                <th>Ngành</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody id="lopTbody"></tbody>
+        </table>
+        <p class="muted" id="emptyHint" style="display:none;">Không có dữ liệu.</p>
+    </section>
+</div>
+
+<!-- Modal Add/Edit -->
+<div class="modal" id="lopModal" aria-hidden="true">
+    <div class="panel">
+        <header>
+            <h3 id="modalTitle">Thêm lớp</h3>
+            <button id="closeModalBtn" class="btn secondary" aria-label="Đóng">Đóng</button>
+        </header>
+        <div class="body">
+            <form id="lopForm">
+                <input type="hidden" id="lopId" />
+                <div class="form-row">
+                    <label for="code">Mã lớp</label>
+                    <input id="code" placeholder="VD: CTK45A" required />
+                </div>
+                <div class="form-row">
+                    <label for="name">Tên lớp</label>
+                    <input id="name" placeholder="VD: Công nghệ thông tin K45A" required />
+                </div>
+                <div class="form-row">
+                    <label for="khoaSelect">Khoa</label>
+                    <select id="khoaSelect" required></select>
+                </div>
+                <div class="form-row">
+                    <label for="nganhSelect">Ngành</label>
+                    <select id="nganhSelect" required></select>
+                </div>
+            </form>
+        </div>
+        <footer>
+            <button id="saveBtn" class="btn">Lưu</button>
+            <button id="resetBtn" class="btn secondary">Làm mới</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    // Auth
+    function getToken() { return localStorage.getItem('token') || null; }
+    function setAuthLinks() {
+        const hasToken = !!getToken();
+        const login = document.getElementById('loginLink');
+        const logout = document.getElementById('logoutLink');
+        if (login) login.style.display = hasToken ? 'none' : '';
+        if (logout) logout.style.display = hasToken ? '' : 'none';
+    }
+    document.getElementById('logoutLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    });
+
+    // API helper
+    async function apiFetch(url, options = {}) {
+        const token = getToken();
+        const headers = options.headers ? { ...options.headers } : {};
+        const hasBody = typeof options.body !== 'undefined' && !(options.body instanceof FormData);
+        if (hasBody && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+
+        const res = await fetch(url, { ...options, headers });
+        if (res.status === 401) { window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+        if (!res.ok) { const txt = await res.text().catch(() => ''); throw new Error(txt || ('HTTP ' + res.status)); }
+        const ct = res.headers.get('content-type') || '';
+        return ct.includes('application/json') ? res.json() : res.text();
+    }
+
+    // Loaders
+    async function loadKhoaOptions(selectEl, includeAll = true) {
+        const data = await apiFetch('/api/khoa');
+        selectEl.innerHTML = '';
+        if (includeAll) {
+            const optAll = document.createElement('option');
+            optAll.value = '';
+            optAll.textContent = '-- Tất cả --';
+            selectEl.appendChild(optAll);
+        }
+        data.forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k.id;
+            opt.textContent = k.name;
+            selectEl.appendChild(opt);
+        });
+    }
+
+    async function loadNganhOptions(selectEl, khoaId, includeAll = true) {
+        const url = khoaId ? '/api/nganh?khoaId=' + encodeURIComponent(khoaId) : '/api/nganh';
+        const data = await apiFetch(url);
+        selectEl.innerHTML = '';
+        if (includeAll) {
+            const optAll = document.createElement('option');
+            optAll.value = '';
+            optAll.textContent = '-- Tất cả --';
+            selectEl.appendChild(optAll);
+        }
+        data.forEach(n => {
+            const opt = document.createElement('option');
+            opt.value = n.id;
+            opt.textContent = n.name;
+            selectEl.appendChild(opt);
+        });
+    }
+
+    async function loadLop() {
+        const tbody = document.getElementById('lopTbody');
+        const emptyHint = document.getElementById('emptyHint');
+        tbody.innerHTML = '';
+        const params = new URLSearchParams();
+        const fk = document.getElementById('filterKhoa').value;
+        const fn = document.getElementById('filterNganh').value;
+        if (fk) params.set('khoaId', fk);
+        if (fn) params.set('nganhId', fn);
+        const url = params.toString() ? '/api/lop?' + params.toString() : '/api/lop';
+        const data = await apiFetch(url);
+
+        if (!data.length) { emptyHint.style.display = ''; return; }
+        emptyHint.style.display = 'none';
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.code}</td>
+                    <td>${item.name}</td>
+                    <td>${item.khoaName}</td>
+                    <td>${item.nganhName}</td>
+                    <td class="actions">
+                        <button class="btn" data-act="edit" data-id="${item.id}">Sửa</button>
+                        <button class="btn secondary" data-act="del" data-id="${item.id}">Xóa</button>
+                    </td>
+                `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Modal helpers
+    const modal = document.getElementById('lopModal');
+    function openModal() { modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); }
+    function closeModal() { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
+
+    function resetForm() {
+        document.getElementById('lopId').value = '';
+        document.getElementById('code').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('modalTitle').textContent = 'Thêm lớp';
+        const fk = document.getElementById('filterKhoa').value;
+        const fn = document.getElementById('filterNganh').value;
+        loadKhoaOptions(document.getElementById('khoaSelect'), false).then(() => {
+            if (fk) document.getElementById('khoaSelect').value = fk;
+            loadNganhOptions(document.getElementById('nganhSelect'), fk, false).then(() => {
+                if (fn) document.getElementById('nganhSelect').value = fn;
+            });
+        });
+    }
+
+    function fillFormForEdit(item) {
+        document.getElementById('lopId').value = item.id;
+        document.getElementById('code').value = item.code;
+        document.getElementById('name').value = item.name;
+        document.getElementById('modalTitle').textContent = 'Cập nhật lớp';
+        (async () => {
+            await loadKhoaOptions(document.getElementById('khoaSelect'), false);
+            document.getElementById('khoaSelect').value = item.khoaId;
+            await loadNganhOptions(document.getElementById('nganhSelect'), item.khoaId, false);
+            document.getElementById('nganhSelect').value = item.nganhId;
+        })();
+    }
+
+    async function onEdit(id) {
+        const item = await apiFetch('/api/lop/' + id);
+        fillFormForEdit(item);
+        openModal();
+    }
+
+    async function onDelete(id) {
+        if (!confirm('Xóa lớp này?')) return;
+        await apiFetch('/api/lop/' + id, { method: 'DELETE' });
+        await loadLop();
+        resetForm();
+    }
+
+    // Events
+    document.getElementById('openModalBtn').addEventListener('click', () => { resetForm(); openModal(); });
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    document.getElementById('btnFilter').addEventListener('click', loadLop);
+    document.getElementById('btnClear').addEventListener('click', async () => {
+        document.getElementById('filterKhoa').value = '';
+        await loadNganhOptions(document.getElementById('filterNganh'), null, true);
+        document.getElementById('filterNganh').value = '';
+        await loadLop();
+    });
+    document.getElementById('filterKhoa').addEventListener('change', async (e) => {
+        const val = e.target.value || null;
+        await loadNganhOptions(document.getElementById('filterNganh'), val, true);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', resetForm);
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        const id = document.getElementById('lopId').value;
+        const payload = {
+            code: document.getElementById('code').value.trim(),
+            name: document.getElementById('name').value.trim(),
+            khoaId: Number(document.getElementById('khoaSelect').value),
+            nganhId: Number(document.getElementById('nganhSelect').value)
+        };
+        if (!payload.code || !payload.name || !payload.khoaId || !payload.nganhId) { alert('Vui lòng nhập đầy đủ thông tin.'); return; }
+        try {
+            if (id) await apiFetch('/api/lop/' + id, { method: 'PUT', body: JSON.stringify(payload) });
+            else await apiFetch('/api/lop', { method: 'POST', body: JSON.stringify(payload) });
+            await loadLop();
+            resetForm();
+            closeModal();
+        } catch (err) { alert('Lỗi: ' + err.message); }
+    });
+
+    document.getElementById('lopTbody').addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        const act = btn.getAttribute('data-act');
+        if (act === 'edit') onEdit(id);
+        if (act === 'del') onDelete(id);
+    });
+
+    // Boot
+    (async function init() {
+        setAuthLinks();
+        try {
+            await loadKhoaOptions(document.getElementById('filterKhoa'), true);
+            await loadNganhOptions(document.getElementById('filterNganh'), null, true);
+            await loadKhoaOptions(document.getElementById('khoaSelect'), false);
+            await loadNganhOptions(document.getElementById('nganhSelect'), null, false);
+            await loadLop();
+        } catch (err) { console.error('Init error:', err); }
+    })();
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+// java
 package org.example.dung_s_spring_boot.config;
 
 import org.springframework.context.annotation.Bean;
@@ -16,8 +17,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/main.html", "/main", "/khoa.html", "/login.html", "/register.html", "/nganh.html").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/static/**").permitAll()
+                        .requestMatchers("/", "/*.html", "/index.html", "/main.html", "/khoa.html", "/login.html", "/register.html", "/nganh.html", "/lop.html").permitAll()
+                        .requestMatchers("/styles/**", "/scripts/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/khoa/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/nganh/**").permitAll()
                         .anyRequest().authenticated()
@@ -36,7 +37,6 @@ public class SecurityConfig {
                 );
         return http.build();
     }
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

@@ -40,4 +40,5 @@ public class Khoa {
     public void setTenKhoa(String tenKhoa) { this.tenKhoa = tenKhoa; }
     public String getMoTa() { return moTa; }
     public void setMoTa(String moTa) { this.moTa = moTa; }
+    public String getName() { return getTenKhoa(); }
 }
