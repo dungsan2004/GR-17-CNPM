@@ -1,11 +1,13 @@
+<!-- File: src/main/resources/static/main.html -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8">
     <title>Trang chính — Hệ thống quản lý điểm thi</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="styles/white-bg.css">
+    <link rel="stylesheet" href="/styles/white-bg.css">
     <style>
+        /* (same inline styles as before) */
         :root{--blue:#2563eb;--blue-dark:#1e40af;--bg:#f4f6fb;--bg-2:#ffffff;--muted:#6b7280;--card:#ffffff;--accent:#eef2ff;--border:rgba(15,23,42,0.08);--shadow:0 8px 24px rgba(2,6,23,0.06);--radius:14px}
         @media (prefers-color-scheme: dark){:root{--bg:#0b1220;--bg-2:#0f172a;--muted:#94a3b8;--card:#0b1220;--accent:#0f1b3d;--border:rgba(148,163,184,0.15);--shadow:0 8px 24px rgba(0,0,0,0.35)}img, svg { filter: saturate(0.95) }}
         *{box-sizing:border-box}html,body{height:100%;margin:0}
@@ -47,12 +49,13 @@
 <body>
 <header class="topbar" aria-label="Thanh tiêu đề">
     <div class="brand">
-        <img src="Dh-Vinh.jpg" alt="Logo trường Đại học Vinh">
+        <img src="/Dh-Vinh.jpg" alt="Logo trường Đại học Vinh">
         <div>Vinh Uni — Hệ thống quản lý điểm thi</div>
     </div>
     <div class="top-actions">
-        <a href="khoa.html" class="btn secondary" aria-label="Quản lý Khoa">Khoa</a>
-        <a href="nganh.html" class="btn secondary" aria-label="Quản lý Ngành">Ngành</a>
+        <a href="/khoa.html" class="btn secondary" aria-label="Quản lý Khoa">Khoa</a>
+        <a href="/nganh.html" class="btn secondary" aria-label="Quản lý Ngành">Ngành</a>
+        <a href="/lop.html" class="btn secondary" aria-label="Quản lý Lớp">Lớp</a>
         <div id="greeting" class="user-chip" aria-live="polite">
             <div class="avatar" aria-hidden="true">V</div>
             <div id="greetingText" style="min-width:120px;color:var(--blue);font-weight:700"></div>
@@ -68,13 +71,13 @@
             <p class="hero-sub">Quản lý Khoa\/Viện và Ngành đào tạo một cách gọn gàng, nhanh chóng.</p>
         </div>
         <div class="hero-actions">
-            <a href="khoa.html" class="btn">Quản lý Khoa</a>
-            <a href="nganh.html" class="btn secondary">Quản lý Ngành</a>
+            <a href="/khoa.html" class="btn">Quản lý Khoa</a>
+            <a href="/nganh.html" class="btn secondary">Quản lý Ngành</a>
         </div>
     </section>
 
     <section class="grid" aria-label="Chức năng nhanh">
-        <a class="tile" href="khoa.html" data-key="khoa" aria-label="Đi tới trang Khoa">
+        <a class="tile" href="/khoa.html" data-key="khoa" aria-label="Đi tới trang Khoa">
             <div class="icon">K</div>
             <div class="meta">
                 <div class="title">Khoa\/Viện</div>
@@ -82,11 +85,19 @@
             </div>
         </a>
 
-        <a class="tile" href="nganh.html" data-key="nganh" aria-label="Đi tới trang Ngành">
+        <a class="tile" href="/nganh.html" data-key="nganh" aria-label="Đi tới trang Ngành">
             <div class="icon">N</div>
             <div class="meta">
                 <div class="title">Ngành</div>
                 <div class="sub">Quản lý ngành đào tạo</div>
+            </div>
+        </a>
+
+        <a class="tile" href="/lop.html" data-key="lop" aria-label="Đi tới trang Lớp">
+            <div class="icon">L</div>
+            <div class="meta">
+                <div class="title">Lớp</div>
+                <div class="sub">Quản lý lớp học</div>
             </div>
         </a>
     </section>
@@ -100,11 +111,11 @@
         if(user){
             greetingText.textContent = decodeURIComponent(user);
         }else{
-            greetingText.innerHTML = '<a href="login.html" style="color:var(--blue);text-decoration:none;">Đăng nhập</a>';
+            greetingText.innerHTML = '<a href="/login.html" style="color:var(--blue);text-decoration:none;">Đăng nhập</a>';
         }
         logoutBtn?.addEventListener('click', function(){
             localStorage.removeItem('user');
-            location.href = 'index.html';
+            location.href = '/index.html';
         });
     })();
 </script>
