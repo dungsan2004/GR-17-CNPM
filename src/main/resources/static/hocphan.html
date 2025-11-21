@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Học phần</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="styles/white-bg.css" rel="stylesheet" />
+    <style>
+        .container { max-width: 1100px; margin: 24px auto; padding: 16px; }
+        .flex { display: flex; gap: 12px; flex-wrap: wrap; }
+        .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .row .full { grid-column: 1 / -1; }
+        label { font-weight: 600; display: block; margin-bottom: 6px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+        button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn { background: #2563eb; color: #fff; }
+        .btn.secondary { background: #6b7280; color: #fff; }
+        .btn.danger { background: #dc2626; color: #fff; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        thead th { background: #f3f4f6; }
+        .nav { background: #111827; color: #fff; padding: 10px 16px; }
+        .nav a { color: #e5e7eb; margin-right: 12px; text-decoration: none; }
+        .nav a.active { color: #fff; font-weight: 700; }
+        .status { margin: 8px 0; padding: 8px 12px; border-radius: 6px; display: none; }
+        .status.ok { background: #ecfdf5; color: #065f46; display: block; }
+        .status.err { background: #fef2f2; color: #991b1b; display: block; }
+    </style>
+</head>
+<body class="white-bg">
+<div class="nav">
+    <a href="index.html">Home</a>
+    <a href="main.html">Dashboard</a>
+    <a href="khoa.html">Khoa</a>
+    <a href="nganh.html">Ngành</a>
+    <a href="lop.html">Lớp</a>
+    <a href="sinhvien.html">Sinh viên</a>
+    <a class="active" href="hocphan.html">Học phần</a>
+    <span style="float:right">
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+    </span>
+</div>
+
+<div class="container">
+    <h2>Quản lý Học phần</h2>
+
+    <div id="status" class="status"></div>
+
+    <div class="card" style="margin-bottom: 16px;">
+        <form id="hpForm">
+            <input type="hidden" id="id" />
+            <div class="row">
+                <div>
+                    <label for="code">Mã học phần</label>
+                    <input id="code" name="code" required maxlength="64" />
+                </div>
+                <div>
+                    <label for="name">Tên học phần</label>
+                    <input id="name" name="name" required maxlength="255" />
+                </div>
+                <div class="full">
+                    <label for="nganh">Ngành</label>
+                    <select id="nganh" name="nganhId" required></select>
+                </div>
+            </div>
+            <div style="margin-top: 12px;">
+                <button type="submit" class="btn" id="saveBtn">Lưu</button>
+                <button type="button" class="btn secondary" id="resetBtn">Làm mới</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="flex" style="justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="margin: 0;">Danh sách Học phần</h3>
+            <button class="btn secondary" id="reloadBtn">Tải lại</button>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Ngành</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody id="hpTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_HP = '/api/hoc-phan';
+    const API_NGANH = '/api/nganh';
+
+    function getToken() {
+        return localStorage.getItem('token') || localStorage.getItem('accessToken') || '';
+    }
+
+    function authHeaders(json = true) {
+        const h = {};
+        if (json) h['Content-Type'] = 'application/json';
+        h['Accept'] = 'application/json';
+        const t = getToken();
+        if (t) h['Authorization'] = 'Bearer ' + t;
+        return h;
+    }
+
+    async function http(url, options = {}) {
+        const resp = await fetch(url, {
+            ...options,
+            headers: { ...authHeaders(options.body !== undefined), ...(options.headers || {}) }
+        });
+        if (resp.status === 401) {
+            window.location.href = 'login.html';
+            return Promise.reject(new Error('Unauthorized'));
+        }
+        if (!resp.ok) {
+            const text = await resp.text().catch(() => '');
+            throw new Error(text || ('HTTP ' + resp.status));
+        }
+        const ct = resp.headers.get('content-type') || '';
+        if (ct.includes('application/json')) return resp.json();
+        return resp.text();
+    }
+
+    function setStatus(msg, ok = true) {
+        const box = document.getElementById('status');
+        box.textContent = msg;
+        box.className = 'status ' + (ok ? 'ok' : 'err');
+        if (msg) {
+            setTimeout(() => { box.className = 'status'; box.textContent = ''; }, 2500);
+        }
+    }
+
+    function clearForm() {
+        document.getElementById('id').value = '';
+        document.getElementById('code').value = '';
+        document.getElementById('name').value = '';
+        const nganh = document.getElementById('nganh');
+        if (nganh.options.length > 0) nganh.selectedIndex = 0;
+        document.getElementById('saveBtn').textContent = 'Lưu';
+    }
+
+    function fillForm(item) {
+        document.getElementById('id').value = item.id;
+        document.getElementById('code').value = item.code;
+        document.getElementById('name').value = item.name;
+        document.getElementById('nganh').value = item.nganhId;
+        document.getElementById('saveBtn').textContent = 'Cập nhật';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function loadNganh() {
+        const list = await http(API_NGANH);
+        const sel = document.getElementById('nganh');
+        sel.innerHTML = '';
+        list.forEach(n => {
+            const opt = document.createElement('option');
+            opt.value = n.id;
+            opt.textContent = (n.code ? (n.code + ' - ') : '') + n.name;
+            sel.appendChild(opt);
+        });
+    }
+
+    function renderTable(data) {
+        const body = document.getElementById('hpTableBody');
+        body.innerHTML = '';
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+          <td>${item.id}</td>
+          <td>${item.code}</td>
+          <td>${item.name}</td>
+          <td>${item.nganhName || item.nganhId}</td>
+          <td>
+            <button class="btn secondary" data-act="edit" data-id="${item.id}">Sửa</button>
+            <button class="btn danger" data-act="del" data-id="${item.id}">Xoá</button>
+          </td>
+        `;
+            body.appendChild(tr);
+        });
+    }
+
+    async function loadHocPhan() {
+        const list = await http(API_HP);
+        renderTable(list);
+    }
+
+    async function saveHocPhan(e) {
+        e.preventDefault();
+        const id = document.getElementById('id').value.trim();
+        const payload = {
+            code: document.getElementById('code').value.trim(),
+            name: document.getElementById('name').value.trim(),
+            nganhId: Number(document.getElementById('nganh').value)
+        };
+        try {
+            if (!payload.code || !payload.name || !payload.nganhId) {
+                setStatus('Vui lòng nhập đầy đủ thông tin', false);
+                return;
+            }
+            if (id) {
+                await http(`${API_HP}/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+                setStatus('Cập nhật thành công');
+            } else {
+                await http(API_HP, { method: 'POST', body: JSON.stringify(payload) });
+                setStatus('Tạo mới thành công');
+            }
+            clearForm();
+            await loadHocPhan();
+        } catch (err) {
+            setStatus(err.message || 'Lỗi xử lý', false);
+        }
+    }
+
+    async function handleAction(e) {
+        const btn = e.target.closest('button[data-act]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        const act = btn.getAttribute('data-act');
+        if (act === 'edit') {
+            try {
+                const item = await http(`${API_HP}/${id}`);
+                fillForm(item);
+            } catch (err) {
+                setStatus('Không tải được dữ liệu', false);
+            }
+        } else if (act === 'del') {
+            if (!confirm('Bạn có chắc muốn xoá?')) return;
+            try {
+                await http(`${API_HP}/${id}`, { method: 'DELETE' });
+                setStatus('Đã xoá');
+                await loadHocPhan();
+            } catch (err) {
+                setStatus('Xoá thất bại', false);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            await loadNganh();
+            await loadHocPhan();
+        } catch (err) {
+            setStatus('Không tải được dữ liệu ban đầu', false);
+        }
+        document.getElementById('hpForm').addEventListener('submit', saveHocPhan);
+        document.getElementById('resetBtn').addEventListener('click', clearForm);
+        document.getElementById('reloadBtn').addEventListener('click', loadHocPhan);
+        document.getElementById('hpTableBody').addEventListener('click', handleAction);
+    });
+</script>
+</body>
+</html>

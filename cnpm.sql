@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 07, 2025 lúc 02:12 PM
+-- Thời gian đã tạo: Th10 21, 2025 lúc 02:28 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -20,6 +20,35 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `cnpm`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `giang_vien`
+--
+
+CREATE TABLE `giang_vien` (
+  `id` bigint(20) NOT NULL,
+  `code` varchar(64) NOT NULL,
+  `name` varchar(128) NOT NULL,
+  `email` varchar(128) NOT NULL,
+  `phone` varchar(32) DEFAULT NULL,
+  `khoa_id` bigint(20) NOT NULL,
+  `nganh_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `hoc_phan`
+--
+
+CREATE TABLE `hoc_phan` (
+  `id` bigint(20) NOT NULL,
+  `code` varchar(64) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `nganh_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -69,6 +98,22 @@ CREATE TABLE `nganh` (
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `sinh_vien`
+--
+
+CREATE TABLE `sinh_vien` (
+  `id` bigint(20) NOT NULL,
+  `code` varchar(64) NOT NULL,
+  `name` varchar(128) NOT NULL,
+  `email` varchar(128) NOT NULL,
+  `khoa_id` bigint(20) NOT NULL,
+  `nganh_id` bigint(20) NOT NULL,
+  `lop_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `users`
 --
 
@@ -87,6 +132,24 @@ CREATE TABLE `users` (
 --
 -- Chỉ mục cho các bảng đã đổ
 --
+
+--
+-- Chỉ mục cho bảng `giang_vien`
+--
+ALTER TABLE `giang_vien`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_giang_vien_code` (`code`),
+  ADD UNIQUE KEY `uk_giang_vien_email` (`email`),
+  ADD KEY `fk_giang_vien_khoa` (`khoa_id`),
+  ADD KEY `fk_giang_vien_nganh` (`nganh_id`);
+
+--
+-- Chỉ mục cho bảng `hoc_phan`
+--
+ALTER TABLE `hoc_phan`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code` (`code`),
+  ADD KEY `fk_hoc_phan_nganh` (`nganh_id`);
 
 --
 -- Chỉ mục cho bảng `khoa`
@@ -114,6 +177,17 @@ ALTER TABLE `nganh`
   ADD KEY `fk_nganh_khoa` (`khoa_id`);
 
 --
+-- Chỉ mục cho bảng `sinh_vien`
+--
+ALTER TABLE `sinh_vien`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_sinh_vien_code` (`code`),
+  ADD UNIQUE KEY `uk_sinh_vien_email` (`email`),
+  ADD KEY `fk_sinh_vien_khoa` (`khoa_id`),
+  ADD KEY `fk_sinh_vien_nganh` (`nganh_id`),
+  ADD KEY `fk_sinh_vien_lop` (`lop_id`);
+
+--
 -- Chỉ mục cho bảng `users`
 --
 ALTER TABLE `users`
@@ -125,6 +199,18 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT cho các bảng đã đổ
 --
+
+--
+-- AUTO_INCREMENT cho bảng `giang_vien`
+--
+ALTER TABLE `giang_vien`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `hoc_phan`
+--
+ALTER TABLE `hoc_phan`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `khoa`
@@ -145,6 +231,12 @@ ALTER TABLE `nganh`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT cho bảng `sinh_vien`
+--
+ALTER TABLE `sinh_vien`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
@@ -153,6 +245,19 @@ ALTER TABLE `users`
 --
 -- Các ràng buộc cho các bảng đã đổ
 --
+
+--
+-- Các ràng buộc cho bảng `giang_vien`
+--
+ALTER TABLE `giang_vien`
+  ADD CONSTRAINT `fk_giang_vien_khoa` FOREIGN KEY (`khoa_id`) REFERENCES `khoa` (`id`),
+  ADD CONSTRAINT `fk_giang_vien_nganh` FOREIGN KEY (`nganh_id`) REFERENCES `nganh` (`id`);
+
+--
+-- Các ràng buộc cho bảng `hoc_phan`
+--
+ALTER TABLE `hoc_phan`
+  ADD CONSTRAINT `fk_hoc_phan_nganh` FOREIGN KEY (`nganh_id`) REFERENCES `nganh` (`id`) ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `lop`
@@ -166,6 +271,14 @@ ALTER TABLE `lop`
 --
 ALTER TABLE `nganh`
   ADD CONSTRAINT `fk_nganh_khoa` FOREIGN KEY (`khoa_id`) REFERENCES `khoa` (`id`);
+
+--
+-- Các ràng buộc cho bảng `sinh_vien`
+--
+ALTER TABLE `sinh_vien`
+  ADD CONSTRAINT `fk_sinh_vien_khoa` FOREIGN KEY (`khoa_id`) REFERENCES `khoa` (`id`),
+  ADD CONSTRAINT `fk_sinh_vien_lop` FOREIGN KEY (`lop_id`) REFERENCES `lop` (`id`),
+  ADD CONSTRAINT `fk_sinh_vien_nganh` FOREIGN KEY (`nganh_id`) REFERENCES `nganh` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
