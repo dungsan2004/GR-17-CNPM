@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Sinh viên — Hệ thống quản lý điểm thi</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/styles/white-bg.css" />
+    <style>
+        :root{--blue:#2563eb;--blue-dark:#1e40af;--bg:#f4f6fb;--bg-2:#ffffff;--muted:#6b7280;--card:#ffffff;--accent:#eef2ff;--border:rgba(15,23,42,0.08);--shadow:0 8px 24px rgba(2,6,23,0.06);--radius:14px}
+        @media (prefers-color-scheme: dark){:root{--bg:#0b1220;--bg-2:#0f172a;--muted:#94a3b8;--card:#0b1220;--accent:#0f1b3d;--border:rgba(148,163,184,0.15);--shadow:0 8px 24px rgba(0,0,0,0.35)}}
+        *{box-sizing:border-box}html,body{height:100%;margin:0}
+        body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),var(--bg-2));color:#0f172a;line-height:1.45}
+        @media (prefers-color-scheme: dark){body{color:#e5e7eb}}
+        a{color:inherit;text-decoration:none}
+        .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(255,255,255,0.75);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+        @media (prefers-color-scheme: dark){.topbar{background:rgba(2,6,23,0.55)}}
+        .brand{display:flex;align-items:center;gap:12px;color:var(--blue);font-weight:700}
+        .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .btn{padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;font-weight:600;border:1px solid transparent;cursor:pointer}
+        .btn.secondary{background:transparent;color:var(--blue);border:1px solid rgba(37,99,235,0.25)}
+        .container{max-width:1100px;margin:18px auto;padding:0 18px}
+        .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px}
+        .hero{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+        .hero-title{font-size:1.6rem;margin:0 0 6px 0}
+        .hero-sub{color:var(--muted);margin:0}
+        .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+        table{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--card)}
+        thead th{background:#f7f8fc;padding:12px 14px;border-bottom:1px solid var(--border);text-align:left}
+        @media (prefers-color-scheme: dark){thead th{background:#0f172a}}
+        tbody td{padding:12px 14px;border-bottom:1px solid var(--border)}
+        .actions{display:flex;gap:8px}
+        .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.45);z-index:50}
+        .modal.show{display:flex}
+        .modal .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);width:100%;max-width:620px;overflow:hidden}
+        .modal header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+        .modal header h3{margin:0;font-size:1.1rem}
+        .modal .body{padding:16px}
+        .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+        .form-row label{font-weight:600}
+        .form-row input,.form-row select{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:inherit}
+        .modal footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 16px;border-top:1px solid var(--border)}
+        .muted{color:var(--muted);margin-top:8px}
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <div class="brand">Hệ thống quản lý điểm thi</div>
+    <div class="top-actions">
+        <a href="/index.html" class="btn secondary">Trang chủ</a>
+        <a href="/main.html" class="btn secondary">Bảng điều khiển</a>
+        <a href="/khoa.html" class="btn secondary">Khoa</a>
+        <a href="/nganh.html" class="btn secondary">Ngành</a>
+        <a href="/lop.html" class="btn secondary">Lớp</a>
+        <a href="/sinhvien.html" class="btn">Sinh viên</a>
+        <a href="/register.html" class="btn secondary">Đăng ký</a>
+        <a href="/login.html" id="loginLink" class="btn secondary">Đăng nhập</a>
+        <a href="#" id="logoutLink" class="btn" style="display:none;">Đăng xuất</a>
+    </div>
+</nav>
+
+<div class="container">
+    <section class="card">
+        <div class="hero">
+            <div>
+                <h1 class="hero-title">Quản lý Sinh viên</h1>
+                <p class="hero-sub">Lọc theo khoa/ngành/lớp và thêm/cập nhật bằng hộp thoại.</p>
+            </div>
+            <div class="hero-actions">
+                <button id="openModalBtn" class="btn">Thêm sinh viên</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="hero">
+            <div>
+                <h3 style="margin:0">Bộ lọc</h3>
+                <p class="hero-sub">Chọn khoa, ngành, lớp để lọc danh sách.</p>
+            </div>
+            <div class="hero-actions">
+                <div class="form-row" style="margin:0">
+                    <label for="filterKhoa">Khoa</label>
+                    <select id="filterKhoa"></select>
+                </div>
+                <div class="form-row" style="margin:0">
+                    <label for="filterNganh">Ngành</label>
+                    <select id="filterNganh"></select>
+                </div>
+                <div class="form-row" style="margin:0">
+                    <label for="filterLop">Lớp</label>
+                    <select id="filterLop"></select>
+                </div>
+                <button id="btnFilter" class="btn">Lọc</button>
+                <button id="btnClear" class="btn secondary">Xóa lọc</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mã SV</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Khoa</th>
+                <th>Ngành</th>
+                <th>Lớp</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody id="svTbody"></tbody>
+        </table>
+        <p class="muted" id="emptyHint" style="display:none;">Không có dữ liệu.</p>
+    </section>
+</div>
+
+<div class="modal" id="svModal" aria-hidden="true">
+    <div class="panel">
+        <header>
+            <h3 id="modalTitle">Thêm sinh viên</h3>
+            <button id="closeModalBtn" class="btn secondary">Đóng</button>
+        </header>
+        <div class="body">
+            <form id="svForm">
+                <input type="hidden" id="svId" />
+                <div class="form-row">
+                    <label for="code">Mã SV</label>
+                    <input id="code" placeholder="VD: SV001" required />
+                </div>
+                <div class="form-row">
+                    <label for="name">Họ tên</label>
+                    <input id="name" placeholder="VD: Nguyễn Văn A" required />
+                </div>
+                <div class="form-row">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" placeholder="VD: a@example.com" required />
+                </div>
+                <div class="form-row">
+                    <label for="khoaSelect">Khoa</label>
+                    <select id="khoaSelect" required></select>
+                </div>
+                <div class="form-row">
+                    <label for="nganhSelect">Ngành</label>
+                    <select id="nganhSelect" required></select>
+                </div>
+                <div class="form-row">
+                    <label for="lopSelect">Lớp</label>
+                    <select id="lopSelect" required></select>
+                </div>
+            </form>
+        </div>
+        <footer>
+            <button id="saveBtn" class="btn">Lưu</button>
+            <button id="resetBtn" class="btn secondary">Làm mới</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    function getToken(){return localStorage.getItem('token')||null}
+    function setAuthLinks(){const t=!!getToken();const l=document.getElementById('loginLink');const o=document.getElementById('logoutLink');if(l)l.style.display=t?'none':'';if(o)o.style.display=t?'':'none'}
+    document.getElementById('logoutLink').addEventListener('click',e=>{e.preventDefault();localStorage.removeItem('token');location.href='/login.html'})
+
+    async function apiFetch(url,options={}){
+        const token=getToken();const headers=options.headers?{...options.headers}:{};
+        const hasBody=typeof options.body!=='undefined'&&!(options.body instanceof FormData);
+        if(hasBody&&!headers['Content-Type']) headers['Content-Type']='application/json';
+        if(token) headers['Authorization']='Bearer '+token;
+        const res=await fetch(url,{...options,headers});
+        if(res.status===401){location.href='/login.html';throw new Error('Unauthorized')}
+        if(!res.ok){const txt=await res.text().catch(()=> '');throw new Error(txt||('HTTP '+res.status))}
+        const ct=res.headers.get('content-type')||'';return ct.includes('application/json')?res.json():res.text()
+    }
+
+    async function loadKhoaOptions(selectEl, includeAll=true){
+        const data=await apiFetch('/api/khoa'); selectEl.innerHTML='';
+        if(includeAll){const o=document.createElement('option');o.value='';o.textContent='-- Tất cả --';selectEl.appendChild(o)}
+        data.forEach(k=>{const o=document.createElement('option');o.value=k.id;o.textContent=k.name;selectEl.appendChild(o)})
+    }
+    async function loadNganhOptions(selectEl, khoaId, includeAll=true){
+        const url=khoaId?'/api/nganh?khoaId='+encodeURIComponent(khoaId):'/api/nganh';
+        const data=await apiFetch(url); selectEl.innerHTML='';
+        if(includeAll){const o=document.createElement('option');o.value='';o.textContent='-- Tất cả --';selectEl.appendChild(o)}
+        data.forEach(n=>{const o=document.createElement('option');o.value=n.id;o.textContent=n.name;selectEl.appendChild(o)})
+    }
+    async function loadLopOptions(selectEl, khoaId, nganhId, includeAll=true){
+        const p=new URLSearchParams(); if(khoaId)p.set('khoaId',khoaId); if(nganhId)p.set('nganhId',nganhId);
+        const url=p.toString()?('/api/lop?'+p.toString()):'/api/lop';
+        const data=await apiFetch(url); selectEl.innerHTML='';
+        if(includeAll){const o=document.createElement('option');o.value='';o.textContent='-- Tất cả --';selectEl.appendChild(o)}
+        data.forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;selectEl.appendChild(o)})
+    }
+
+    async function loadSV(){
+        const tbody=document.getElementById('svTbody'); const hint=document.getElementById('emptyHint');
+        tbody.innerHTML='';
+        const p=new URLSearchParams();
+        const fk=document.getElementById('filterKhoa').value;
+        const fn=document.getElementById('filterNganh').value;
+        const fl=document.getElementById('filterLop').value;
+        if(fk)p.set('khoaId',fk); if(fn)p.set('nganhId',fn); if(fl)p.set('lopId',fl);
+        const url=p.toString()?('/api/sinhvien?'+p.toString()):'/api/sinhvien';
+        const data=await apiFetch(url);
+        if(!data.length){hint.style.display='';return} hint.style.display='none';
+        data.forEach(item=>{
+            const tr=document.createElement('tr');
+            tr.innerHTML=`
+        <td>${item.id}</td>
+        <td>${item.code}</td>
+        <td>${item.name}</td>
+        <td>${item.email}</td>
+        <td>${item.khoaName}</td>
+        <td>${item.nganhName}</td>
+        <td>${item.lopName}</td>
+        <td class="actions">
+          <button class="btn" data-act="edit" data-id="${item.id}">Sửa</button>
+          <button class="btn secondary" data-act="del" data-id="${item.id}">Xóa</button>
+        </td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    const modal=document.getElementById('svModal');
+    function openModal(){modal.classList.add('show');modal.setAttribute('aria-hidden','false')}
+    function closeModal(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
+
+    function resetForm(){
+        svId.value=''; code.value=''; name.value=''; email.value='';
+        modalTitle.textContent='Thêm sinh viên';
+        const fk=filterKhoa.value||null; const fn=filterNganh.value||null; const fl=filterLop.value||null;
+        loadKhoaOptions(khoaSelect,false).then(()=>{
+            if(fk)khoaSelect.value=fk;
+            loadNganhOptions(nganhSelect, fk, false).then(()=>{
+                if(fn)nganhSelect.value=fn;
+                loadLopOptions(lopSelect, fk, fn, false).then(()=>{ if(fl)lopSelect.value=fl; });
+            });
+        });
+    }
+
+    function fillForm(item){
+        svId.value=item.id; code.value=item.code; name.value=item.name; email.value=item.email;
+        modalTitle.textContent='Cập nhật sinh viên';
+        (async ()=>{
+            await loadKhoaOptions(khoaSelect,false); khoaSelect.value=item.khoaId;
+            await loadNganhOptions(nganhSelect,item.khoaId,false); nganhSelect.value=item.nganhId;
+            await loadLopOptions(lopSelect,item.khoaId,item.nganhId,false); lopSelect.value=item.lopId;
+        })();
+    }
+
+    async function onEdit(id){ const item=await apiFetch('/api/sinhvien/'+id); fillForm(item); openModal(); }
+    async function onDelete(id){ if(!confirm('Xóa sinh viên này?'))return; await apiFetch('/api/sinhvien/'+id,{method:'DELETE'}); await loadSV(); resetForm(); }
+
+    const svId=document.getElementById('svId');
+    const code=document.getElementById('code');
+    const name=document.getElementById('name');
+    const email=document.getElementById('email');
+    const khoaSelect=document.getElementById('khoaSelect');
+    const nganhSelect=document.getElementById('nganhSelect');
+    const lopSelect=document.getElementById('lopSelect');
+
+    const filterKhoa=document.getElementById('filterKhoa');
+    const filterNganh=document.getElementById('filterNganh');
+    const filterLop=document.getElementById('filterLop');
+
+    document.getElementById('openModalBtn').addEventListener('click',()=>{resetForm();openModal()});
+    document.getElementById('closeModalBtn').addEventListener('click',closeModal);
+    modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+
+    document.getElementById('btnFilter').addEventListener('click',loadSV);
+    document.getElementById('btnClear').addEventListener('click',async()=>{
+        filterKhoa.value=''; await loadNganhOptions(filterNganh,null,true); filterNganh.value='';
+        await loadLopOptions(filterLop,null,null,true); filterLop.value=''; await loadSV();
+    });
+
+    filterKhoa.addEventListener('change',async e=>{
+        const fk=e.target.value||null;
+        await loadNganhOptions(filterNganh,fk,true);
+        await loadLopOptions(filterLop,fk,filterNganh.value||null,true);
+    });
+    filterNganh.addEventListener('change',async e=>{
+        await loadLopOptions(filterLop,filterKhoa.value||null,e.target.value||null,true);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click',resetForm);
+    document.getElementById('saveBtn').addEventListener('click',async()=>{
+        const id=svId.value;
+        const payload={
+            code:code.value.trim(),
+            name:name.value.trim(),
+            email:email.value.trim(),
+            khoaId:Number(khoaSelect.value),
+            nganhId:Number(nganhSelect.value),
+            lopId:Number(lopSelect.value)
+        };
+        if(!payload.code||!payload.name||!payload.email||!payload.khoaId||!payload.nganhId||!payload.lopId){alert('Vui lòng nhập đầy đủ thông tin.');return}
+        try{
+            if(id) await apiFetch('/api/sinhvien/'+id,{method:'PUT',body:JSON.stringify(payload)});
+            else await apiFetch('/api/sinhvien',{method:'POST',body:JSON.stringify(payload)});
+            await loadSV(); resetForm(); closeModal();
+        }catch(err){alert('Lỗi: '+err.message)}
+    });
+
+    document.getElementById('svTbody').addEventListener('click',e=>{
+        const btn=e.target.closest('button'); if(!btn)return;
+        const id=btn.getAttribute('data-id'); const act=btn.getAttribute('data-act');
+        if(act==='edit') onEdit(id); if(act==='del') onDelete(id);
+    });
+
+    (async function init(){
+        setAuthLinks();
+        try{
+            await loadKhoaOptions(filterKhoa,true);
+            await loadNganhOptions(filterNganh,null,true);
+            await loadLopOptions(filterLop,null,null,true);
+            await loadKhoaOptions(khoaSelect,false);
+            await loadNganhOptions(nganhSelect,null,false);
+            await loadLopOptions(lopSelect,null,null,false);
+            await loadSV();
+        }catch(err){console.error('Init error:',err)}
+    })();
+</script>
+</body>
+</html>
