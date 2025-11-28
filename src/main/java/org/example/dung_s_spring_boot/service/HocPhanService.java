@@ -25,10 +25,10 @@ public class HocPhanService {
 
     public HocPhanResponse create(HocPhanRequest request) {
         if (hocPhanRepository.existsByCode(request.getCode())) {
-            throw new IllegalArgumentException("HocPhan code already exists");
+            throw new IllegalArgumentException("Code học phần đã tồn tại");
         }
         Nganh nganh = nganhRepository.findById(request.getNganhId())
-                .orElseThrow(() -> new EntityNotFoundException("Nganh not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy ngành"));
         HocPhan hp = new HocPhan();
         hp.setCode(request.getCode());
         hp.setName(request.getName());
@@ -40,7 +40,7 @@ public class HocPhanService {
     @Transactional(readOnly = true)
     public HocPhanResponse get(Long id) {
         HocPhan hp = hocPhanRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("HocPhan not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy học phần"));
         return map(hp);
     }
 
@@ -51,13 +51,13 @@ public class HocPhanService {
 
     public HocPhanResponse update(Long id, HocPhanRequest request) {
         HocPhan hp = hocPhanRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("HocPhan not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy học phần"));
         if (!hp.getCode().equals(request.getCode()) && hocPhanRepository.existsByCode(request.getCode())) {
-            throw new IllegalArgumentException("HocPhan code already exists");
+            throw new IllegalArgumentException("Code học phần đã tồn tại");
         }
         if (!hp.getNganh().getId().equals(request.getNganhId())) {
             Nganh nganh = nganhRepository.findById(request.getNganhId())
-                    .orElseThrow(() -> new EntityNotFoundException("Nganh not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy ngành"));
             hp.setNganh(nganh);
         }
         hp.setCode(request.getCode());
@@ -67,7 +67,7 @@ public class HocPhanService {
 
     public void delete(Long id) {
         if (!hocPhanRepository.existsById(id)) {
-            throw new EntityNotFoundException("HocPhan not found");
+            throw new EntityNotFoundException("Không tìm thấy học phần");
         }
         hocPhanRepository.deleteById(id);
     }
