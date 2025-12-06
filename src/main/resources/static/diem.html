@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Quản lý Điểm</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/styles/white-bg.css" />
+</head>
+<body>
+<nav class="topbar"><div class="brand">Hệ thống quản lý điểm thi</div>
+    <div class="top-actions"><a href="/main.html" class="btn">Trở về</a></div>
+</nav>
+
+<div class="container">
+    <section class="card">
+        <h2>Danh sách Điểm</h2>
+        <div style="display:flex;gap:10px;align-items:end;margin-bottom:8px">
+            <div><label>Sinh viên</label><select id="filterSv"></select></div>
+            <div><label>Học phần</label><select id="filterHp"></select></div>
+            <button id="btnFilter" class="btn">Lọc</button>
+            <button id="openModal" class="btn primary">Thêm điểm</button>
+        </div>
+
+        <table class="table">
+            <thead>
+            <tr><th>ID</th><th>Sinh viên</th><th>Học phần</th><th>Điểm</th><th>Ngày tạo</th><th>Hành động</th></tr>
+            </thead>
+            <tbody id="tbl"></tbody>
+        </table>
+    </section>
+</div>
+
+<div class="modal" id="modal" aria-hidden="true">
+    <div class="panel">
+        <header>
+            <h3 id="mt">Thêm điểm</h3>
+            <button id="close" class="btn secondary">Đóng</button>
+        </header>
+        <div class="body">
+            <form id="f" onsubmit="return false;">
+                <input type="hidden" id="id" />
+                <div class="form-row"><label>Sinh viên</label><select id="sv"></select></div>
+                <div class="form-row"><label>Học phần</label><select id="hp"></select></div>
+                <div class="form-row"><label>Điểm</label><input id="val" type="number" step="0.01" /></div>
+            </form>
+        </div>
+        <footer>
+            <button id="save" class="btn primary">Lưu</button>
+            <button id="reset" class="btn secondary">Làm mới</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    async function apiFetch(url, opts={}) {
+        const res = await fetch(url, opts);
+        if (!res.ok) throw new Error(await res.text().catch(()=>res.status));
+        const ct = res.headers.get('content-type')||'';
+        return ct.includes('application/json')?res.json():res.text();
+    }
+
+    async function loadSv(sel, includeAll=true){
+        const data = await apiFetch('/api/sinhvien');
+        sel.innerHTML = includeAll?'<option value="">--Tất cả--</option>':'';
+        data.forEach(s => sel.insertAdjacentHTML('beforeend', `<option value="${s.id}">${s.name}</option>`));
+    }
+
+    async function loadHp(sel, includeAll=true){
+        const data = await apiFetch('/api/hocphan');
+        sel.innerHTML = includeAll?'<option value="">--Tất cả--</option>':'';
+        data.forEach(h => sel.insertAdjacentHTML('beforeend', `<option value="${h.id}">${h.name}</option>`));
+    }
+
+    async function loadTable(){
+        const params = new URLSearchParams();
+        const sv = document.getElementById('filterSv').value;
+        const hp = document.getElementById('filterHp').value;
+        if (sv) params.set('sinhVienId', sv);
+        if (hp) params.set('hocPhanId', hp);
+        const url = '/api/diem' + (params.toString()?('?'+params.toString()):'');
+        const data = await apiFetch(url);
+        const tb = document.getElementById('tbl'); tb.innerHTML = '';
+        data.forEach(d => {
+            tb.insertAdjacentHTML('beforeend', `<tr>
+          <td>${d.id}</td>
+          <td>${d.sinhVienName || ''}</td>
+          <td>${d.hocPhanName || ''}</td>
+          <td>${d.value}</td>
+          <td>${d.createdAt ? new Date(d.createdAt).toLocaleString() : ''}</td>
+          <td>
+            <button data-id="${d.id}" data-act="e" class="btn">Sửa</button>
+            <button data-id="${d.id}" data-act="d" class="btn secondary">Xóa</button>
+          </td>
+        </tr>`);
+        });
+    }
+
+    // modal helpers
+    const modal = document.getElementById('modal');
+    function openM(){ modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); }
+    function closeM(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
+
+    document.getElementById('openModal').addEventListener('click', async ()=>{
+        document.getElementById('id').value = '';
+        document.getElementById('mt').textContent = 'Thêm điểm';
+        await loadSv(document.getElementById('sv'), false);
+        await loadHp(document.getElementById('hp'), false);
+        document.getElementById('val').value = '';
+        openM();
+    });
+    document.getElementById('close').addEventListener('click', closeM);
+    document.getElementById('reset').addEventListener('click', async ()=>{
+        document.getElementById('sv').selectedIndex = 0;
+        document.getElementById('hp').selectedIndex = 0;
+        document.getElementById('val').value = '';
+    });
+
+    document.getElementById('save').addEventListener('click', async ()=>{
+        const id = document.getElementById('id').value;
+        const payload = {
+            value: Number(document.getElementById('val').value),
+            sinhVienId: Number(document.getElementById('sv').value),
+            hocPhanId: Number(document.getElementById('hp').value)
+        };
+        try {
+            if (id) await apiFetch('/api/diem/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            else await apiFetch('/api/diem', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            await loadTable(); closeM();
+        } catch (err) { alert('Lỗi: ' + (err.message || err)); }
+    });
+
+    document.getElementById('tbl').addEventListener('click', async (e)=>{
+        const b = e.target.closest('button'); if (!b) return;
+        const id = b.getAttribute('data-id'); const act = b.getAttribute('data-act');
+        if (act === 'd') {
+            if (confirm('Xóa điểm?')) {
+                await apiFetch('/api/diem/' + id, { method: 'DELETE' });
+                await loadTable();
+            }
+        } else if (act === 'e') {
+            const d = await apiFetch('/api/diem/' + id);
+            document.getElementById('id').value = d.id;
+            document.getElementById('mt').textContent = 'Sửa điểm';
+            await loadSv(document.getElementById('sv'), false);
+            document.getElementById('sv').value = d.sinhVienId || '';
+            await loadHp(document.getElementById('hp'), false);
+            document.getElementById('hp').value = d.hocPhanId || '';
+            document.getElementById('val').value = d.value || '';
+            openM();
+        }
+    });
+
+    document.getElementById('btnFilter').addEventListener('click', loadTable);
+
+    (async function boot(){
+        await loadSv(document.getElementById('filterSv'), true);
+        await loadHp(document.getElementById('filterHp'), true);
+        await loadTable();
+    })();
+</script>
+</body>
+</html>
