@@ -162,7 +162,6 @@
 </div>
 
 <script>
-    // Auth
     function getToken() { return localStorage.getItem('token') || null; }
     function setAuthLinks() {
         const hasToken = !!getToken();
@@ -176,8 +175,6 @@
         localStorage.removeItem('token');
         window.location.href = '/login.html';
     });
-
-    // API helper
     async function apiFetch(url, options = {}) {
         const token = getToken();
         const headers = options.headers ? { ...options.headers } : {};
@@ -306,7 +303,7 @@
         resetForm();
     }
 
-    // Events
+
     document.getElementById('openModalBtn').addEventListener('click', () => { resetForm(); openModal(); });
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
