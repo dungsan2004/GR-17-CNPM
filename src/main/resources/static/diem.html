@@ -60,47 +60,66 @@
     </style>
 </head>
 <body>
-<nav class="topbar"><div class="brand">Hệ thống quản lý điểm thi</div>
-    <div class="top-actions"><a href="/main.html" class="btn">Trở về</a></div>
-</nav>
+<header class="topbar">
+    <div class="brand">Hệ thống quản lý điểm thi</div>
+    <div class="top-actions">
+        <a href="/main.html" class="btn">Trở về</a>
+    </div>
+</header>
 
-<div class="container">
+<main class="container">
     <section class="card">
-        <h2>Danh sách Điểm</h2>
-        <div style="display:flex;gap:10px;align-items:end;margin-bottom:8px">
-            <div><label>Sinh viên</label><select id="filterSv"></select></div>
-            <div><label>Học phần</label><select id="filterHp"></select></div>
-            <button id="btnFilter" class="btn">Lọc</button>
-            <button id="openModal" class="btn primary">Thêm điểm</button>
+        <div class="toolbar">
+            <div class="toolbar-left" style="align-items:end;">
+                <div>
+                    <label>Sinh viên</label><br/>
+                    <select id="filterSv"></select>
+                </div>
+                <div>
+                    <label>Học phần</label><br/>
+                    <select id="filterHp"></select>
+                </div>
+                <button id="btnFilter" class="btn">Lọc</button>
+            </div>
+            <div class="toolbar-right">
+                <button id="openModal" class="btn primary">Thêm điểm</button>
+            </div>
         </div>
 
-        <table class="table">
-            <thead>
-            <tr><th>ID</th><th>Sinh viên</th><th>Học phần</th><th>Điểm</th><th>Ngày tạo</th><th>Hành động</th></tr>
-            </thead>
-            <tbody id="tbl"></tbody>
-        </table>
+        <h2 style="margin-top:0">Danh sách Điểm</h2>
+
+        <div style="overflow:auto">
+            <table class="table">
+                <thead>
+                <tr><th>ID</th><th>Sinh viên</th><th>Học phần</th><th>Điểm</th><th>Ngày tạo</th><th>Hành động</th></tr>
+                </thead>
+                <tbody id="tbl"></tbody>
+            </table>
+        </div>
     </section>
-</div>
+</main>
 
-<div class="modal" id="modal" aria-hidden="true">
-    <div class="panel">
-        <header>
-            <h3 id="mt">Thêm điểm</h3>
-            <button id="close" class="btn secondary">Đóng</button>
-        </header>
-        <div class="body">
-            <form id="f" onsubmit="return false;">
-                <input type="hidden" id="id" />
-                <div class="form-row"><label>Sinh viên</label><select id="sv"></select></div>
-                <div class="form-row"><label>Học phần</label><select id="hp"></select></div>
-                <div class="form-row"><label>Điểm</label><input id="val" type="number" step="0.01" /></div>
-            </form>
+<!-- modal backdrop wraps the modal; JS will toggle display on backdrop -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true" style="display:none;">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
+        <div class="panel">
+            <header>
+                <h3 id="mt">Thêm điểm</h3>
+                <button id="close" class="btn secondary">Đóng</button>
+            </header>
+            <div class="body">
+                <form id="f" onsubmit="return false;">
+                    <input type="hidden" id="id" />
+                    <div class="form-row"><label>Sinh viên</label><select id="sv"></select></div>
+                    <div class="form-row"><label>Học phần</label><select id="hp"></select></div>
+                    <div class="form-row"><label>Điểm</label><input id="val" type="number" step="0.01" /></div>
+                </form>
+            </div>
+            <footer>
+                <button id="save" class="btn primary">Lưu</button>
+                <button id="reset" class="btn secondary">Làm mới</button>
+            </footer>
         </div>
-        <footer>
-            <button id="save" class="btn primary">Lưu</button>
-            <button id="reset" class="btn secondary">Làm mới</button>
-        </footer>
     </div>
 </div>
 
@@ -148,10 +167,16 @@
         });
     }
 
-    // modal helpers
+    // modal helpers - use backdrop to show/hide
+    const backdrop = document.getElementById('modalBackdrop');
     const modal = document.getElementById('modal');
-    function openM(){ modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); }
-    function closeM(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
+    function openM(){ backdrop.style.display = 'flex'; backdrop.setAttribute('aria-hidden','false'); }
+    function closeM(){ backdrop.style.display = 'none'; backdrop.setAttribute('aria-hidden','true'); }
+
+    // close when clicking outside modal content
+    backdrop.addEventListener('click', (e)=>{
+        if (e.target === backdrop) closeM();
+    });
 
     document.getElementById('openModal').addEventListener('click', async ()=>{
         document.getElementById('id').value = '';
